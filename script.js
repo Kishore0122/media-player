@@ -139,8 +139,15 @@ function playMusic(track, pause = false) {
             .slice(0, 3)
             .join(" ") || "Unknown Title";
       
-        document.querySelector(".songinfo").innerHTML = title;
-        document.querySelector(".songtime").innerHTML = "00:00 / 00:00";
+        const songinfoElement = document.querySelector(".songinfo");
+        if (songinfoElement) {
+            songinfoElement.innerHTML = title;
+        }
+        
+        const songtimeElement = document.querySelector(".songtime");
+        if (songtimeElement) {
+            songtimeElement.innerHTML = "00:00 / 00:00";
+        }
 
         // Add error event listener
         currentSong.onerror = (e) => {
@@ -362,26 +369,53 @@ async function main() {
         currentSong.addEventListener("timeupdate", () => {
             const current = secondsToMinutesSeconds(currentSong.currentTime);
             const total = secondsToMinutesSeconds(currentSong.duration || 0);
-            document.querySelector(".songtime").innerHTML = `${current} / ${total}`;
-            document.querySelector(".circle").style.left = 
-                ((currentSong.currentTime / currentSong.duration) * 100 || 0) + "%";
+            
+            const songtimeElement = document.querySelector(".songtime");
+            if (songtimeElement) {
+                songtimeElement.innerHTML = `${current} / ${total}`;
+            }
+            
+            const circleElement = document.querySelector(".circle");
+            if (circleElement) {
+                circleElement.style.left = ((currentSong.currentTime / currentSong.duration) * 100 || 0) + "%";
+            }
         });
 
         // Seekbar click handling
-        document.querySelector(".seekbar").addEventListener("click", e => {
-            const percent = (e.offsetX / e.target.getBoundingClientRect().width) * 100;
-            document.querySelector(".circle").style.left = percent + "%";
-            currentSong.currentTime = ((currentSong.duration) * percent) / 100;
-        });
+        const seekbar = document.querySelector(".seekbar");
+        if (seekbar) {
+            seekbar.addEventListener("click", e => {
+                const percent = (e.offsetX / e.target.getBoundingClientRect().width) * 100;
+                const circle = document.querySelector(".circle");
+                if (circle) {
+                    circle.style.left = percent + "%";
+                }
+                currentSong.currentTime = ((currentSong.duration) * percent) / 100;
+            });
+        } else {
+            console.warn("Seekbar element not found");
+        }
 
         // Mobile menu handlers
-        document.querySelector(".hamburger").addEventListener("click", () => {
-            document.querySelector(".left").style.left = "0";
-        });
+        const hamburger = document.querySelector(".hamburger");
+        if (hamburger) {
+            hamburger.addEventListener("click", () => {
+                const left = document.querySelector(".left");
+                if (left) left.style.left = "0";
+            });
+        } else {
+            console.warn("Hamburger menu button not found");
+        }
 
-        document.querySelector(".close").addEventListener("click", () => {
-            document.querySelector(".left").style.left = "-120%";
-        });
+        const closeBtn = document.querySelector(".close");
+        if (closeBtn) {
+            closeBtn.addEventListener("click", () => {
+                const left = document.querySelector(".left");
+                if (left) left.style.left = "-120%";
+            });
+        } else {
+            console.warn("Close button not found");
+        }
 
         // Previous button functionality
         previousButton.addEventListener("click", () => {
@@ -424,25 +458,35 @@ async function main() {
         });
 
         // Volume slider functionality
-        volumeSlider.addEventListener("input", (e) => {
-            const volume = parseInt(e.target.value) / 100;
-            currentSong.volume = volume;
-            document.querySelector(".volume>img").src = volume > 0 ? "src/volume.svg" : "src/mute.svg";
-        });
+        if (volumeSlider) {
+            volumeSlider.addEventListener("input", (e) => {
+                const volume = parseInt(e.target.value) / 100;
+                currentSong.volume = volume;
+                const volumeIcon = document.querySelector(".volume>img");
+                if (volumeIcon) {
+                    volumeIcon.src = volume > 0 ? "src/volume.svg" : "src/mute.svg";
+                }
+            });
+        }
 
         // Volume icon click handler
-        document.querySelector(".volume>img").addEventListener("click", (e) => {
-            const icon = e.target;
-            if (icon.src.includes("mute.svg")) {
-                icon.src = "src/volume.svg";
-                currentSong.volume = 0.1;
-                volumeSlider.value = 10;
-            } else {
-                icon.src = "src/mute.svg";
-                currentSong.volume = 0;
-                volumeSlider.value = 0;
-            }
-        });
+        const volumeIcon = document.querySelector(".volume>img");
+        if (volumeIcon) {
+            volumeIcon.addEventListener("click", (e) => {
+                const icon = e.target;
+                if (icon.src.includes("mute.svg")) {
+                    icon.src = "src/volume.svg";
+                    currentSong.volume = 0.1;
+                    if (volumeSlider) volumeSlider.value = 10;
+                } else {
+                    icon.src = "src/mute.svg";
+                    currentSong.volume = 0;
+                    if (volumeSlider) volumeSlider.value = 0;
+                }
+            });
+        } else {
+            console.warn("Volume icon not found");
+        }
         
         // Song ended event - play next song or move to next album
         currentSong.addEventListener("ended", () => {
